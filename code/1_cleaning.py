@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 ###############################################
             ## GENERAL CLEANING ##
@@ -38,7 +39,6 @@ vintage_trim['year'] = vintage_trim['yrq'].str.split('_').str[0].astype(int)
 vintage_trim['quarter'] = vintage_trim['yrq'].str.split('Q').str[1].astype(int)
 vintage_trim.drop(columns=['DATE'], inplace=True)
 vintage_trim = filter_date(vintage_trim, '1965_Q1', 0)
-vintage_trim.set_index('yrq', inplace=True) # The indexing trifecta
 
 def drop_cols(dfcols, a, b, di):
     columns = []
@@ -52,17 +52,52 @@ def drop_cols(dfcols, a, b, di):
         columns.remove(e)
     return columns
 
+def column_to_float(data):
+    for var in data:
+        if var != 'yrq':
+            data[f'{var}'].astype(float)
+        
+
 vintage_trim = vintage_trim.drop(columns=drop_cols(vintage_trim.columns, 64, 95, ['CPI94Q3', 'CPI94Q4']))
-
-for var in vintage_trim.columns:
-    vintage_trim[f'{var}'].astype(float)
+column_to_float(vintage_trim)
 
 ###############################################
-            ## CALCULATING GROWTH RATES ##
+        ## CALCULATING CPI GROWTH RATES ##
 ###############################################
 
-
-
+# This right here... Disgusting
+for t in range(76, 304):
+    y = vintage_trim.loc[t - 1, 'year']
+    q = vintage_trim.loc[t - 1, 'quarter']
+    if q <= 3:
+        if y <= 1994 and pd.notna(vintage_trim.loc[t - 1, 'CPI94Q3']):
+            vintage_trim.loc[t, 't'] = vintage_trim.loc[t - 1, 'CPI94Q3']
+        else:
+            y = vintage_trim.loc[t, 'year']
+            q = vintage_trim.loc[t, 'quarter']
+            vintage_trim.loc[t, 't'] = vintage_trim.loc[t - 1, f'CPI{str(y)[2:4]}Q{q}']
+    else:
+        if y <= 1994 and pd.notna(vintage_trim.loc[t - 1, 'CPI94Q3']):
+            vintage_trim.loc[t, 't'] = vintage_trim.loc[t - 1, 'CPI94Q3']
+        else:
+            y = vintage_trim.loc[t, 'year']
+            q = vintage_trim.loc[t, 'quarter']
+            vintage_trim.loc[t, 't'] = vintage_trim.loc[t - 1, f'CPI{str(y)[2:4]}Q{q}']
+            
+    for i in range(0, 5):
+        y_i = vintage_trim.loc[t + i + 1, 'year']
+        q_i = vintage_trim.loc[t + i + 1, 'quarter']
+        if q_i <= 3:
+            if y_i <= 1994 and pd.notna(vintage_trim.loc[t + i, 'CPI94Q3']):
+                vintage_trim.loc[t, f't+{i}'] = (vintage_trim.loc[t + i, 'CPI94Q3'] / vintage_trim.loc[t, 't']) - 1
+            else:
+                vintage_trim.loc[t, f't+{i}'] = (vintage_trim.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / vintage_trim.loc[t, 't']) - 1
+        else:
+            if y_i <= 1994 and pd.notna(vintage_trim.loc[t + i, 'CPI94Q3']):
+                vintage_trim.loc[t, f't+{i}'] = (vintage_trim.loc[t + i, 'CPI94Q3'] / vintage_trim.loc[t, 't']) - 1
+            else:
+                vintage_trim.loc[t, f't+{i}'] = (vintage_trim.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / vintage_trim.loc[t, 't']) - 1
+            
 ###############################################
                 ## EXPORT ##
 ###############################################
