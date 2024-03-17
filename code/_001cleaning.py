@@ -105,7 +105,7 @@ cpi_growth(vintage_trim, 76, 304)
                 ## EXPORT ##
 ###############################################
 
-mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/spf_mean_trim.cvs', sep=',', index=True)
+mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/mean_spf_trim.cvs', sep=',', index=True)
 vintage_trim.to_csv('Documents/thesis/_replication/cleaned_data/vintage_trim.cvs', sep=',', index=True)
 
 
