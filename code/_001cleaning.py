@@ -12,7 +12,7 @@ mean_spf_trim = mean_spf
 mean_spf_trim['yrq'] = mean_spf_trim['YEAR'].astype(str) + '_Q' + mean_spf_trim['QUARTER'].astype(str)
 mean_spf_trim = mean_spf_trim.fillna("")
 mean_spf_trim = mean_spf_trim.drop(['YEAR', 'QUARTER', 'CPI6','CPIA', 'CPIB', 'CPIC'], axis=1)
-mean_spf_trim = mean_spf_trim.rename(columns={'CPI1':'cpi_ft+1', 'CPI2': 'cpi_ft+2', 'CPI3': 'cpi_ft+3', 'CPI4': 'cpi_ft+4', 'CPI5': 'cpi_ft+5'})
+mean_spf_trim = mean_spf_trim.rename(columns={'CPI1':'cpi_ft0', 'CPI2': 'cpi_ft1', 'CPI3': 'cpi_ft2', 'CPI4': 'cpi_ft3', 'CPI5': 'cpi_ft4'})
 
 def filter_date(dataframe, a, b):
     c = dataframe[(dataframe['yrq'] >= a)]
