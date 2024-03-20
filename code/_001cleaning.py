@@ -4,15 +4,19 @@ import pandas as pd
             ## GENERAL CLEANING ##
 ###############################################
 
-## SPF DATA ##
+#####################
+    ## SPF DATA ##
+#####################
+
+### Mean Forecasts ###
 mean_spf = pd.read_csv("Documents/thesis/_replication/data/spf_mean_cpi.csv")
 mean_spf.to_csv("Documents/thesis/_replication/data/spf_mean_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 
 mean_spf_trim = mean_spf
 mean_spf_trim['yrq'] = mean_spf_trim['YEAR'].astype(str) + '_Q' + mean_spf_trim['QUARTER'].astype(str)
 mean_spf_trim = mean_spf_trim.fillna("")
-mean_spf_trim = mean_spf_trim.drop(['YEAR', 'QUARTER', 'CPI6','CPIA', 'CPIB', 'CPIC'], axis=1)
-mean_spf_trim = mean_spf_trim.rename(columns={'CPI1':'cpi_ft0', 'CPI2': 'cpi_ft1', 'CPI3': 'cpi_ft2', 'CPI4': 'cpi_ft3', 'CPI5': 'cpi_ft4'})
+mean_spf_trim = mean_spf_trim.drop(['CPIA', 'CPIB', 'CPIC'], axis=1)
+mean_spf_trim = mean_spf_trim.rename(columns={'CPI1':'f_t0', 'CPI2': 'f_t1', 'CPI3': 'f_t2', 'CPI4': 'f_t3', 'CPI5': 'f_t4', 'CPI6': 'f_t5'})
 
 def filter_date(dataframe, a, b):
     c = dataframe[(dataframe['yrq'] >= a)]
@@ -24,7 +28,22 @@ def filter_date(dataframe, a, b):
 
 mean_spf_trim = filter_date(mean_spf_trim, '1981_Q3', 0)
 
-## Vintage CPI DATA ##
+
+### Individual Forecasts ###
+ind_spf = pd.read_csv("Documents/thesis/_replication/data/spf_ind_cpi.csv")
+ind_spf.to_csv("Documents/thesis/_replication/data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
+
+ind_spf_trim = ind_spf
+ind_spf_trim['yrq'] = ind_spf_trim['YEAR'].astype(str) + '_Q' + ind_spf_trim['QUARTER'].astype(str)
+ind_spf_trim = ind_spf_trim.drop(['CPIA', 'CPIB', 'CPIC'], axis=1)
+ind_spf_trim = ind_spf_trim.rename(columns={'CPI1':'f_t0', 'CPI2': 'f_t1', 'CPI3': 'f_t2', 'CPI4': 'f_t3', 'CPI5': 'f_t4', 'CPI6': 'f_t5'})
+
+
+ind_spf_trim = filter_date(ind_spf_trim,'1981_Q3', 0)
+
+#####################
+  ## VINTAGE DATA ##
+#####################
 vintage = pd.read_csv("Documents/thesis/_replication/data/vintage_cpi.csv")
 vintage.to_csv("Documents/thesis/_replication/data/vintage_cpi.csv", sep=',', index=False)    # Original file had CRLF endings, changed to LF for Git
 
@@ -51,14 +70,7 @@ def drop_cols(dfcols, a, b, di):
         columns.remove(e)
     return columns
 
-def column_to_float(dataframe):
-    for var in dataframe:
-        if var != 'yrq':
-            dataframe[f'{var}'].astype(float)
-        
-
 vintage_trim = vintage_trim.drop(columns=drop_cols(vintage_trim.columns, 64, 95, ['CPI94Q3', 'CPI94Q4']))
-column_to_float(vintage_trim)
 
 ###############################################
         ## CALCULATING CPI GROWTH RATES ##
@@ -90,14 +102,14 @@ def cpi_growth(dataframe, start_idx, end_idx):
             q_i = dataframe.loc[t + i + 1, 'quarter']
             if q_i <= 3:
                 if y_i <= 1994 and pd.notna(dataframe.loc[t + i, 'CPI94Q3']):
-                    dataframe.loc[t, f't+{i}'] = (dataframe.loc[t + i, 'CPI94Q3'] / dataframe.loc[t, 't']) - 1
+                    dataframe.loc[t, f't{i}'] = ((dataframe.loc[t + i, 'CPI94Q3'] / dataframe.loc[t, 't']) - 1) * 100
                 else:
-                    dataframe.loc[t, f't+{i}'] = (dataframe.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / dataframe.loc[t, 't']) - 1
+                    dataframe.loc[t, f't{i}'] = ((dataframe.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / dataframe.loc[t, 't']) - 1) * 100
             else:
                 if y_i <= 1994 and pd.notna(dataframe.loc[t + i, 'CPI94Q3']):
-                    dataframe.loc[t, f't+{i}'] = (dataframe.loc[t + i, 'CPI94Q3'] / dataframe.loc[t, 't']) - 1
+                    dataframe.loc[t, f't{i}'] = ((dataframe.loc[t + i, 'CPI94Q3'] / dataframe.loc[t, 't']) - 1) * 100
                 else:
-                    dataframe.loc[t, f't+{i}'] = (dataframe.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / dataframe.loc[t, 't']) - 1
+                    dataframe.loc[t, f't{i}'] = ((dataframe.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / dataframe.loc[t, 't']) - 1) * 100
 
 cpi_growth(vintage_trim, 76, 304)
             
@@ -106,7 +118,9 @@ cpi_growth(vintage_trim, 76, 304)
 ###############################################
 
 mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/mean_spf_trim.cvs', sep=',', index=True)
+ind_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/ind_spf_trim.cvs', sep=',', index=True)
 vintage_trim.to_csv('Documents/thesis/_replication/cleaned_data/vintage_trim.cvs', sep=',', index=True)
+
 
 
 
