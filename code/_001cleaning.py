@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 ###############################################
             ## GENERAL CLEANING ##
@@ -19,15 +20,22 @@ mean_spf_trim = mean_spf_trim.drop(['CPIA', 'CPIB', 'CPIC'], axis=1)
 mean_spf_trim = mean_spf_trim.rename(columns={'CPI1':'f_t0', 'CPI2': 'f_t1', 'CPI3': 'f_t2', 'CPI4': 'f_t3', 'CPI5': 'f_t4', 'CPI6': 'f_t5'})
 
 def filter_date(dataframe, a, b):
-    c = dataframe[(dataframe['yrq'] >= a)]
-    if b != 0:
-        d = c[(c['yrq'] <= b)]
-        return d
+    if a != 0:
+        c = dataframe[(dataframe['yrq'] >= a)]
+        if b != 0:
+            d = c[(c['yrq'] <= b)]
+            return d
+        else:
+            return c
     else:
-        return c
+        if b != 0:
+            d = c[(c['yrq'] <= b)]
+            return d
+        else:
+            return c
 
 mean_spf_trim = filter_date(mean_spf_trim, '1981_Q3', 0)
-
+mean_spf_trim = mean_spf_trim.reset_index()
 
 ### Individual Forecasts ###
 ind_spf = pd.read_csv("Documents/thesis/_replication/data/spf_ind_cpi.csv")
@@ -40,6 +48,7 @@ ind_spf_trim = ind_spf_trim.rename(columns={'CPI1':'f_t0', 'CPI2': 'f_t1', 'CPI3
 
 
 ind_spf_trim = filter_date(ind_spf_trim,'1981_Q3', 0)
+ind_spf_trim = ind_spf_trim.reset_index()
 
 #####################
   ## VINTAGE DATA ##
@@ -56,7 +65,9 @@ vintage_trim['yrq'] = vintage_trim['DATE'].dt.strftime('%Y_Q') + vintage_trim['D
 vintage_trim['year'] = vintage_trim['yrq'].str.split('_').str[0].astype(int)
 vintage_trim['quarter'] = vintage_trim['yrq'].str.split('Q').str[1].astype(int)
 vintage_trim.drop(columns=['DATE'], inplace=True)
+
 vintage_trim = filter_date(vintage_trim, '1965_Q1', 0)
+vintage_trim = vintage_trim.reset_index()
 
 def drop_cols(dfcols, a, b, di):
     columns = []
@@ -73,12 +84,12 @@ def drop_cols(dfcols, a, b, di):
 vintage_trim = vintage_trim.drop(columns=drop_cols(vintage_trim.columns, 64, 95, ['CPI94Q3', 'CPI94Q4']))
 
 ###############################################
-        ## CALCULATING CPI GROWTH RATES ##
+              ## CALCULATIONS ##
 ###############################################
 
-# This right here... Disgusting
-def cpi_growth(dataframe, start_idx, end_idx):
-    for t in range(start_idx, end_idx):
+### Vintage Growth ###
+def cpi_growth(dataframe):
+    for t in range(1, len(dataframe)-5):
         y = dataframe.loc[t - 1, 'year']
         q = dataframe.loc[t - 1, 'quarter']
         
@@ -111,8 +122,28 @@ def cpi_growth(dataframe, start_idx, end_idx):
                 else:
                     dataframe.loc[t, f't{i}'] = ((dataframe.loc[t + i, f'CPI{str(y_i)[2:4]}Q{str(q_i)}'] / dataframe.loc[t, 't']) - 1) * 100
 
-cpi_growth(vintage_trim, 76, 304)
-            
+cpi_growth(vintage_trim)
+
+### Revisions ###
+
+# Mean SPF data
+def revisions(dataframe):
+    for n in range(0, len(dataframe)-2):
+        for i in range(1, 5):
+            dataframe.loc[n, f'r_t{i}'] = dataframe.loc[n + 1, f'f_t{i}'] - dataframe.loc[n, f'f_t{i + 1}']
+
+revisions(mean_spf_trim)
+
+# Individual SPF data
+def revisions_ind(dataframe):
+    a = np.unique(dataframe['ID'])
+    for t in a:
+        b = dataframe[dataframe['ID'] == t]
+        for k in b:
+            for i in range(1, 5):
+
+o = revisions_ind(ind_spf_trim)
+
 ###############################################
                 ## EXPORT ##
 ###############################################
