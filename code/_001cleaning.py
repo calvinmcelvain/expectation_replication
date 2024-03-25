@@ -133,9 +133,9 @@ errors_ind(ind_spf_trim, vintage_trim)
                 ## EXPORT ##
 ###############################################
 
-mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/mean_spf_trim.cvs', sep=',', index=True)
-ind_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/ind_spf_trim.cvs', sep=',', index=True)
-vintage_trim.to_csv('Documents/thesis/_replication/cleaned_data/vintage_trim.cvs', sep=',', index=True)
+mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/mean_spf_trim.csv', sep=',', index=True)
+ind_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/ind_spf_trim.csv', sep=',', index=True)
+vintage_trim.to_csv('Documents/thesis/_replication/cleaned_data/vintage_trim.csv', sep=',', index=True)
 
 
 
