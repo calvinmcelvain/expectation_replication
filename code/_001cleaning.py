@@ -1,4 +1,7 @@
+import os
 import pandas as pd
+
+os.chdir('/Users/fogellmcmuffin/Documents/thesis/_replication/')    # Working dir
 
 ###############################################
             ## GENERAL CLEANING ##
@@ -9,8 +12,8 @@ import pandas as pd
 #####################
 
 ### Mean Forecasts ###
-mean_spf = pd.read_csv("Documents/thesis/_replication/data/spf_mean_cpi.csv")
-mean_spf.to_csv("Documents/thesis/_replication/data/spf_mean_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
+mean_spf = pd.read_csv("data/spf_mean_cpi.csv")
+mean_spf.to_csv("data/spf_mean_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 mean_spf_trim = mean_spf
 
 mean_spf_trim = mean_spf_trim.set_index(pd.to_datetime(mean_spf_trim['YEAR'].astype(str) + '-' + (mean_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0))
@@ -19,12 +22,12 @@ mean_spf_trim = mean_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], 
 mean_spf_trim = mean_spf_trim['1981-09-01':]
 
 ### Individual Forecasts ###
-ind_spf = pd.read_csv("Documents/thesis/_replication/data/spf_ind_cpi.csv")
-ind_spf.to_csv("Documents/thesis/_replication/data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
+ind_spf = pd.read_csv("data/spf_ind_cpi.csv")
+ind_spf.to_csv("data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 ind_spf_trim = ind_spf
 
 ind_spf_trim = ind_spf_trim.set_index([pd.to_datetime(ind_spf_trim['YEAR'].astype(str) + '-' + (ind_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0), 'ID'])  # Panel data
-
+ind_spf_trim = ind_spf_trim.dropna(axis=0, thresh=8)
 ind_spf_trim = ind_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
 ind_spf_trim = ind_spf_trim['1981-09-01':]
 
@@ -32,8 +35,8 @@ ind_spf_trim = ind_spf_trim['1981-09-01':]
  ## VINTAGE DATA ##
 #####################
 
-vintage = pd.read_csv("Documents/thesis/_replication/data/vintage_cpi.csv")
-vintage.to_csv("Documents/thesis/_replication/data/vintage_cpi.csv", sep=',', index=False)    # Original file had CRLF endings, changed to LF for Git
+vintage = pd.read_csv("data/vintage_cpi.csv")
+vintage.to_csv("data/vintage_cpi.csv", sep=',', index=False)    # Original file had CRLF endings, changed to LF for Git
 vintage_trim = vintage
 
 vintage_trim['DATE'] = pd.to_datetime(vintage_trim['DATE'], format='%Y:%m')
@@ -116,16 +119,16 @@ revisions_ind(ind_spf_trim)
 ### Mean Forecasts ###
 def errors(df, v):
     for i in df.index:
-        for j in range(1, 6):
-            df.loc[i, f'e_t{j}'] = v.loc[i, f't{j}'] - df.loc[i, f'f_t{j-1}']
+        for j in range(0, 5):
+            df.loc[i, f'e_t{j}'] = v.loc[i, f't{j+1}'] - df.loc[i, f'f_t{j}']
 
 errors(mean_spf_trim, vintage_trim)
 
 ### Individual Forecasts ###
 def errors_ind(df, v):
     for d, i in df.index:
-        for j in range(1, 6):
-            df.loc[(d, i), f'e_t{j}'] = v.loc[d, f't{j}'] - df.loc[(d, i), f'f_t{j-1}']
+        for j in range(0, 5):
+            df.loc[(d, i), f'e_t{j}'] = v.loc[d, f't{j+1}'] - df.loc[(d, i), f'f_t{j}']
 
 errors_ind(ind_spf_trim, vintage_trim)
 
@@ -133,9 +136,9 @@ errors_ind(ind_spf_trim, vintage_trim)
                 ## EXPORT ##
 ###############################################
 
-mean_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/mean_spf_trim.csv', sep=',', index=True)
-ind_spf_trim.to_csv('Documents/thesis/_replication/cleaned_data/ind_spf_trim.csv', sep=',', index=True)
-vintage_trim.to_csv('Documents/thesis/_replication/cleaned_data/vintage_trim.csv', sep=',', index=True)
+mean_spf_trim.to_csv('cleaned_data/mean_spf_trim.csv', sep=',', index=True)
+ind_spf_trim.to_csv('cleaned_data/ind_spf_trim.csv', sep=',', index=True)
+vintage_trim.to_csv('cleaned_data/vintage_trim.csv', sep=',', index=True)
 
 
 
