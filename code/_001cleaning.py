@@ -15,9 +15,7 @@ os.chdir('/Users/fogellmcmuffin/Documents/thesis/_replication/')    # Working di
 mean_spf = pd.read_csv("data/spf_mean_cpi.csv")
 mean_spf.to_csv("data/spf_mean_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 mean_spf_trim = mean_spf
-
 mean_spf_trim = mean_spf_trim.set_index(pd.to_datetime(mean_spf_trim['YEAR'].astype(str) + '-' + (mean_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0))
-
 mean_spf_trim = mean_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
 mean_spf_trim = mean_spf_trim['1981-09-01':]
 
@@ -25,9 +23,8 @@ mean_spf_trim = mean_spf_trim['1981-09-01':]
 ind_spf = pd.read_csv("data/spf_ind_cpi.csv")
 ind_spf.to_csv("data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 ind_spf_trim = ind_spf
-
+ind_spf_trim = ind_spf_trim.dropna(subset=['CPI1', 'CPI2', 'CPI3', 'CPI4', 'CPI5', 'CPI6'])
 ind_spf_trim = ind_spf_trim.set_index([pd.to_datetime(ind_spf_trim['YEAR'].astype(str) + '-' + (ind_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0), 'ID'])  # Panel data
-ind_spf_trim = ind_spf_trim.dropna(axis=0, thresh=8)
 ind_spf_trim = ind_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
 ind_spf_trim = ind_spf_trim['1981-09-01':]
 

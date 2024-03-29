@@ -13,12 +13,11 @@ ind_spf_trim = ind_spf_trim.set_index(['Unnamed: 0', 'ID'])
 mean_stats = pd.DataFrame()
 ind_stats = pd.DataFrame()
 
-#####################
-   ## SUM STATS ##
-#####################
+###############################################
+                ## SUM STATS ##
+###############################################
 
 mean_spf_trim = mean_spf_trim[:'2016-12-31']  # Filter data
-
 
 def sum_stats(df, v):
     for j in range(4):
@@ -50,3 +49,9 @@ def sum_stats(df, v):
 sum_stats(mean_spf_trim, mean_stats)
 sum_stats(ind_spf_trim, ind_stats)
 
+###############################################
+                ## EXPORT ##
+###############################################
+
+mean_stats.to_csv('output/mean_stats.csv', sep=',', index=True)
+ind_stats.to_csv('output/ind_stats.csv', sep=',', index=True)

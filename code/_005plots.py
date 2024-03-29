@@ -16,24 +16,24 @@ vintage = vintage.set_index('DATE')
             ## SCATTER PLOTS ##
 ###############################################
 
-### Revisions - Errors ###
+#####################
+ ## Rev & Errors ##
+#####################
 fig, (axm, axi) = plt.subplots(nrows=1, sharey=True, ncols=2, figsize=(8, 4))
+fig.suptitle('t+3 Forecast Errors and t-1 Revisions', fontsize=14)
 
-# Mean
+### Mean ###
 x = mean_spf['r_t3']
 y = mean_spf['e_t3']
 axm.scatter(x, y, c='navy', alpha=1)
 axm.set_xlabel('Mean Revisions', fontsize=12)
 axm.set_ylabel('Errors', fontsize=12)
 
-# Individual
+### Individual ###
 x2 = ind_spf['r_t3']
 y2 = ind_spf['e_t3']
 axi.scatter(x2, y2, c='black', alpha=1)
 axi.set_xlabel('Individual Revisions', fontsize=12)
 
 plt.show()
-
 fig.savefig('output/re_scat.png')
-
-###  ###
