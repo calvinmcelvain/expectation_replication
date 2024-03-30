@@ -17,7 +17,7 @@ ind_stats = pd.DataFrame()
                 ## SUM STATS ##
 ###############################################
 
-mean_spf_trim = mean_spf_trim[:'2016-12-31']  # Filter data
+mean_spf_trim = mean_spf_trim[:]  # Filter data
 
 def sum_stats(df, v):
     for j in range(4):

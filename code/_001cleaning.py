@@ -70,10 +70,11 @@ def actual_growth(df):
         df.loc[i, 't'] = vintage_trim.loc[i - pd.offsets.QuarterEnd(), column_name]
     
     for i in df.index[1:]:
-        for j in range(1, 6):
-            next_quarters = i + pd.offsets.QuarterEnd(j)
+        for j in range(0, 5):
+            next_quarters = i + pd.offsets.QuarterEnd(j+1)
             if next_quarters in df.index:
                 df.loc[i, f't{j}'] = ((df.loc[next_quarters, 't'] / df.loc[i, 't']) - 1)
+
 actual_growth(vintage_trim)
 
 ### Forecasts ###
@@ -117,7 +118,7 @@ revisions_ind(ind_spf_trim)
 def errors(df, v):
     for i in df.index:
         for j in range(0, 5):
-            df.loc[i, f'e_t{j}'] = v.loc[i, f't{j+1}'] - df.loc[i, f'f_t{j}']
+            df.loc[i, f'e_t{j}'] = v.loc[i, f't{j}'] - df.loc[i, f'f_t{j}']
 
 errors(mean_spf_trim, vintage_trim)
 
@@ -125,7 +126,7 @@ errors(mean_spf_trim, vintage_trim)
 def errors_ind(df, v):
     for d, i in df.index:
         for j in range(0, 5):
-            df.loc[(d, i), f'e_t{j}'] = v.loc[d, f't{j+1}'] - df.loc[(d, i), f'f_t{j}']
+            df.loc[(d, i), f'e_t{j}'] = v.loc[d, f't{j}'] - df.loc[(d, i), f'f_t{j}']
 
 errors_ind(ind_spf_trim, vintage_trim)
 
