@@ -10,11 +10,9 @@ vintage_trim = pd.read_csv('cleaned_data/vintage_trim.csv')
 mean_spf_trim = pd.read_csv('cleaned_data/mean_spf_trim.csv')
 ind_spf_trim = pd.read_csv('cleaned_data/ind_spf_trim.csv')
 
-mean_spf_trim['DATE'] = pd.to_datetime(mean_spf_trim['Unnamed: 0'])
-mean_spf_trim = mean_spf_trim.drop(['Unnamed: 0'], axis=1)
+mean_spf_trim['DATE'] = pd.to_datetime(mean_spf_trim['DATE'])
 
-ind_spf_trim['DATE'] = pd.to_datetime(ind_spf_trim['Unnamed: 0'])
-ind_spf_trim = ind_spf_trim.drop(['Unnamed: 0'], axis=1)
+ind_spf_trim['DATE'] = pd.to_datetime(ind_spf_trim['DATE'])
 
 ###############################################
                 ## ESTIMATION ##
@@ -24,7 +22,8 @@ ind_spf_trim = ind_spf_trim.drop(['Unnamed: 0'], axis=1)
 ## Mean Forecasts ##
 #####################
 
-mean_spf_trim = mean_spf_trim.loc[(mean_spf_trim['DATE'] >= '1981-12-31') & (mean_spf_trim['DATE'] <= '2016-12-31')]  # Filter data
+a = '2022-12-31'
+mean_spf_trim = mean_spf_trim.loc[(mean_spf_trim['DATE'] >= '1981-12-31') & (mean_spf_trim['DATE'] <= a)]  # Filter data
 
 def est_table(df):
     est_table = pd.DataFrame(index=['const', 'beta_1'])
@@ -48,7 +47,7 @@ mean_estimations = est_table(mean_spf_trim)
 #####################
 
 ### Pooled OLS ###
-ind_spf_trim = ind_spf_trim.loc[(ind_spf_trim['DATE'] >= '1981-12-31') & (ind_spf_trim['DATE'] <= '2016-12-31')]  # Filter data
+ind_spf_trim = ind_spf_trim.loc[(ind_spf_trim['DATE'] >= '1981-12-31') & (ind_spf_trim['DATE'] <= a)]  # Filter data
 
 ind_spf_trim = ind_spf_trim.dropna(subset='r_t1')
 ind_est_pld = est_table(ind_spf_trim)
@@ -91,7 +90,7 @@ ind_est_fe2 = est_table_fe2(ind_spf_trim)
     ## AR(1) ##
 #####################
 
-vintage_trim = vintage_trim.loc[(vintage_trim['DATE'] >= '1965-06-30') & (vintage_trim['DATE'] <= '2016-12-31')]  # Filter data
+vintage_trim = vintage_trim.loc[(vintage_trim['DATE'] >= '1965-06-30') & (vintage_trim['DATE'] <= a)]  # Filter data
 
 def ar_j(df):
     ar_table = pd.DataFrame(index=['phi'])
@@ -109,14 +108,14 @@ ar_table = ar_j(vintage_trim)
 ###############################################
 
 def params(dfm, dfp, dff, dff2, ar):
-    params = pd.DataFrame(index=['ols/pld', 'fe', 'fe2'])
-    params.loc['ols/pld', 'lambda'] = dfm.loc['beta_1', 'coef_t3'] / (1 + dfm.loc['beta_1', 'coef_t3'])
-    params.loc['ols/pld', 'G'] = 1 / (1 + dfm.loc['beta_1', 'coef_t3'])
+    params = pd.DataFrame(index=['ols', 'pld', 'fe', 'fe2'])
+    params.loc['ols', 'lambda'] = dfm.loc['beta_1', 'coef_t3'] / (1 + dfm.loc['beta_1', 'coef_t3'])
+    params.loc['ols', 'G'] = 1 / (1 + dfm.loc['beta_1', 'coef_t3'])
     pldc = dfp.iloc[1]['coef_t3']
     fec = dff.iloc[1]['coef_t3']
     fe2c = dff2.iloc[1]['coef_t3']
     ar1 = ar.iloc[0]['coef']
-    params.loc['ols/pld', 'Theta'] = (-((2 * pldc) + 1) + np.sqrt(((2 * pldc) + 1)**2 - 4 * (pldc + (pldc * ar1**2) + 1) * pldc)) / (2 * (pldc + (pldc * ar1**2) + 1))
+    params.loc['pld', 'Theta'] = (-((2 * pldc) + 1) + np.sqrt(((2 * pldc) + 1)**2 - 4 * (pldc + (pldc * ar1**2) + 1) * pldc)) / (2 * (pldc + (pldc * ar1**2) + 1))
     params.loc['fe', 'Theta'] = (-((2 * fec) + 1) + np.sqrt(((2 * fec) + 1)**2 - 4 * (fec + (fec * ar1**2) + 1) * fec)) / (2 * (fec + (fec * ar1**2) + 1))
     params.loc['fe2', 'Theta'] = (-((2 * fe2c) + 1) + np.sqrt(((2 * fe2c) + 1)**2 - 4 * (fe2c + (fe2c * ar1**2) + 1) * fe2c)) / (2 * (fe2c + (fe2c * ar1**2) + 1))
     return params
@@ -132,3 +131,4 @@ ind_est_pld.to_csv('output/ind_est_pld.csv', sep=',', index=True)
 ind_est_fe.to_csv('output/ind_est_fe.csv', sep=',', index=True)
 ind_est_fe2.to_csv('output/ind_est_fe2.csv', sep=',', index=True)
 ar_table.to_csv('output/ar_estimations.csv', sep=',', index=True)
+parameters.to_csv('output/parameters.csv', sep=',', index=True)

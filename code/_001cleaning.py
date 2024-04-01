@@ -11,22 +11,19 @@ os.chdir('/Users/fogellmcmuffin/Documents/thesis/_replication/')    # Working di
     ## SPF DATA ##
 #####################
 
-### Mean Forecasts ###
-mean_spf = pd.read_csv("data/spf_mean_cpi.csv")
-mean_spf.to_csv("data/spf_mean_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
-mean_spf_trim = mean_spf
-mean_spf_trim = mean_spf_trim.set_index(pd.to_datetime(mean_spf_trim['YEAR'].astype(str) + '-' + (mean_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0))
-mean_spf_trim = mean_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
-mean_spf_trim = mean_spf_trim['1981-09-01':]
-
 ### Individual Forecasts ###
 ind_spf = pd.read_csv("data/spf_ind_cpi.csv")
 ind_spf.to_csv("data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
 ind_spf_trim = ind_spf
 ind_spf_trim = ind_spf_trim.dropna(subset=['CPI1', 'CPI2', 'CPI3', 'CPI4', 'CPI5', 'CPI6'])
-ind_spf_trim = ind_spf_trim.set_index([pd.to_datetime(ind_spf_trim['YEAR'].astype(str) + '-' + (ind_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0), 'ID'])  # Panel data
+ind_spf_trim['DATE'] = pd.to_datetime(ind_spf_trim['YEAR'].astype(str) + '-' + (ind_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0)
+ind_spf_trim = ind_spf_trim.set_index(['DATE', 'ID'])  # Panel data
 ind_spf_trim = ind_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
 ind_spf_trim = ind_spf_trim['1981-09-01':]
+
+### Mean Forecasts ###
+mean_spf_trim = ind_spf_trim.groupby(level='DATE').mean()
+mean_spf_trim = mean_spf_trim.drop(['INDUSTRY'], axis=1)
 
 #####################
  ## VINTAGE DATA ##
@@ -54,6 +51,17 @@ def drop_cols(dfcols, a, b, di):
     return columns
 
 vintage_trim = vintage_trim.drop(columns=drop_cols(vintage_trim.columns, 64, 95, ['CPI94Q3', 'CPI94Q4']))
+
+def recessions(df):
+    df['rec'] = 0
+    df.loc['1980-06-30':'1981-06-30', 'rec'] = 1
+    df.loc['1989-12-31':'1991-03-31', 'rec'] = 1
+    df.loc['2001-03-31':'2001-09-30', 'rec'] = 1
+    df.loc['2007-12-31':'2009-06-30', 'rec'] = 1
+    df.loc['2020-03-31':'2020-06-30', 'rec'] = 1
+    return df
+
+vintage_trim = recessions(vintage_trim)
 
 ###############################################
         ## PRELIMINARY CALCULATIONS ##

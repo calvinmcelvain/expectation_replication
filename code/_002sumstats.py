@@ -7,8 +7,9 @@ os.chdir('/Users/fogellmcmuffin/Documents/thesis/_replication/')    # Working di
 mean_spf_trim = pd.read_csv('cleaned_data/mean_spf_trim.csv')
 ind_spf_trim = pd.read_csv('cleaned_data/ind_spf_trim.csv')
 
-mean_spf_trim = mean_spf_trim.set_index('Unnamed: 0')
-ind_spf_trim = ind_spf_trim.set_index(['Unnamed: 0', 'ID'])
+mean_spf_trim = mean_spf_trim.set_index('DATE')
+forcasters = np.count_nonzero(pd.unique(ind_spf_trim['ID']))
+ind_spf_trim = ind_spf_trim.set_index(['DATE', 'ID'])
 
 mean_stats = pd.DataFrame()
 ind_stats = pd.DataFrame()
@@ -17,7 +18,8 @@ ind_stats = pd.DataFrame()
                 ## SUM STATS ##
 ###############################################
 
-mean_spf_trim = mean_spf_trim[:]  # Filter data
+mean_spf_trim = mean_spf_trim['1981-12-31':'2022-12-31']  # Filter data
+ind_spf_trim = ind_spf_trim['1981-12-31':'2022-12-31']
 
 def sum_stats(df, v):
     for j in range(4):
@@ -48,6 +50,9 @@ def sum_stats(df, v):
 
 sum_stats(mean_spf_trim, mean_stats)
 sum_stats(ind_spf_trim, ind_stats)
+
+# Average number of forecasts made by each forecaster
+avg_indfor = np.mean(ind_spf_trim.groupby(level='ID').size())
 
 ###############################################
                 ## EXPORT ##
