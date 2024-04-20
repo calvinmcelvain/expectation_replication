@@ -53,7 +53,6 @@ ind_spf_trim = ind_spf_trim.dropna(subset='r_t1')
 ind_est_pld = est_table(ind_spf_trim)
 
 ### ID Fixed Effects ###
-### ID Fixed Effects ###
 def est_table_fe(df):
     est_table = pd.DataFrame(index=['const', 'beta_1'])
     for j in range(4):

@@ -12,30 +12,32 @@ os.chdir('/Users/fogellmcmuffin/Documents/thesis/_replication/')    # Working di
 #####################
 
 ### Individual Forecasts ###
-ind_spf = pd.read_csv("data/spf_ind_cpi.csv")
-ind_spf.to_csv("data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
-ind_spf_trim = ind_spf
+ind_spf_trim = pd.read_csv("data/spf_ind_cpi.csv")
+ind_spf_trim.to_csv("data/spf_ind_cpi.csv", sep=',', index=False)  # Original file had CRLF endings, changed to LF for Git
+
 ind_spf_trim = ind_spf_trim.dropna(subset=['CPI1', 'CPI2', 'CPI3', 'CPI4', 'CPI5', 'CPI6'])
 ind_spf_trim['DATE'] = pd.to_datetime(ind_spf_trim['YEAR'].astype(str) + '-' + (ind_spf_trim['QUARTER'] * 3).astype(str), format='%Y-%m') + pd.offsets.MonthEnd(0)
 ind_spf_trim = ind_spf_trim.set_index(['DATE', 'ID'])  # Panel data
 ind_spf_trim = ind_spf_trim.drop(['YEAR', 'QUARTER', 'CPIA', 'CPIB', 'CPIC'], axis=1)
+
 ind_spf_trim = ind_spf_trim['1981-09-01':]
 
 ### Mean Forecasts ###
 mean_spf_trim = ind_spf_trim.groupby(level='DATE').mean()
+
 mean_spf_trim = mean_spf_trim.drop(['INDUSTRY'], axis=1)
 
 #####################
  ## VINTAGE DATA ##
 #####################
 
-vintage = pd.read_csv("data/vintage_cpi.csv")
-vintage.to_csv("data/vintage_cpi.csv", sep=',', index=False)    # Original file had CRLF endings, changed to LF for Git
-vintage_trim = vintage
+vintage_trim = pd.read_csv("data/vintage_cpi.csv")
+vintage_trim.to_csv("data/vintage_cpi.csv", sep=',', index=False)    # Original file had CRLF endings, changed to LF for Git
 
 vintage_trim['DATE'] = pd.to_datetime(vintage_trim['DATE'], format='%Y:%m')
 vintage_trim.set_index('DATE', inplace=True)
 vintage_trim = vintage_trim.resample('Q').mean()    # Data is collected monthly, mean aggregating to quarterly to match forecasts
+
 vintage_trim = vintage_trim['1965-03-01':]
 
 def drop_cols(dfcols, a, b, di):
